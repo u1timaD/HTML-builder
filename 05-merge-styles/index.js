@@ -23,7 +23,7 @@ fs.readdir(stylesDist, (err, files) => {
 			if(status.isFile() && reg.test(file)) {
 				fs.readFile(path.join(stylesDist, file), 'utf-8', (err, data) => {
 					if (err) throw err;
-				fs.appendFile(path.join(projectDist, 'bundle.css'), data, (err) => {
+				fs.appendFile(path.join(projectDist, 'bundle.css'), `${data}\n`, (err) => {
 					if (err) throw err;
 				});
 			})
