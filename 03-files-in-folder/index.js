@@ -1,28 +1,27 @@
 const fs = require('fs');
 const path = require('path');
 
-const directoryPath = `${__dirname}/secret-folder`; // замените на путь к вашей директории
+const secretFolder = `${__dirname}/secret-folder`;
 
-fs.readdir(directoryPath, (err, files) => {
+fs.readdir(secretFolder, (err, files) => {
   if (err) {
     console.error(err);
     return;
   }
 
   files.forEach(file => {
-    const filePath = path.join(directoryPath, file);
+    const filePath = path.join(secretFolder, file);
 
-	const fileName = file.replace(/\..+/g, '');
-	const fileRas = file.replace(/\w+\./g, '');
+    const fileName = file.replace(/\..+/g, '');
+    const fileRas = file.replace(/\w+\./g, '');
 	
 
     fs.stat(filePath, (err, stats) => {
-	const fileSize = stats.size / 1000;
+	  const fileSize = stats.size / 1000;
       if (err) {
         console.error(err);
         return;
       }
-
 
       if (stats.isFile()) {
         console.log(`${fileName} - ${fileRas} - ${fileSize} kb`);
