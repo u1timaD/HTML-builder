@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const filesFolder = `${__dirname}/files`;
-const filesCopyFolder = `${__dirname}/files-copy`;
+const filesFolder = path.join(__dirname, 'files');
+const filesCopyFolder = path.join(__dirname, 'files-copy');
 
 fs.mkdir(filesCopyFolder, { recursive: true }, (err) => {
   if (err) {
@@ -32,10 +32,10 @@ fs.mkdir(filesCopyFolder, { recursive: true }, (err) => {
       }
 
       const file = files.shift();
-      const sourcePath = path.join(filesFolder, file);
-      const targetPath = path.join(filesCopyFolder, file);
+      const filesFolderPath = path.join(filesFolder, file);
+      const filesCopyFolderPath = path.join(filesCopyFolder, file);
 
-      fs.copyFile(sourcePath, targetPath, (err) => {
+      fs.copyFile(filesFolderPath, filesCopyFolderPath, (err) => {
         if (err) {
           console.log('Не смогли скопировать');
           return;
