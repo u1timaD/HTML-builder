@@ -12,7 +12,7 @@ fs.mkdir(filesCopyFolder, { recursive: true }, (err) => {
 
   fs.readdir(filesCopyFolder, (err, files) => {
     if (err) throw err;
-  
+
     for (const file of files) {
       fs.unlink(path.join(filesCopyFolder, file), err => {
         if (err) throw err;
@@ -40,11 +40,11 @@ fs.mkdir(filesCopyFolder, { recursive: true }, (err) => {
           console.log('Не смогли скопировать');
           return;
         }
-        
+
         copyFiles();
       });
     };
     copyFiles();
   });
-  console.log('Всё прошло успешно')
+  console.log('Всё прошло успешно');
 });
