@@ -47,7 +47,7 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
               const findIn = changeIndexData.indexOf(`{{${nameTag}}}`);
               const contentBeforeInsertion = changeIndexData.slice(0, findIn);
               const contentAfterInsertion = changeIndexData.slice(findIn + size, changeIndexData.length);
-              const updatedContent = contentBeforeInsertion + block + contentAfterInsertion;
+              const updatedContent = contentBeforeInsertion + `\n${block}` + contentAfterInsertion;
               changeIndexData = updatedContent;
 
               // ! Добавляем его в разметку по одному
