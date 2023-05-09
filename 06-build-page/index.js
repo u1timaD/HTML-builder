@@ -10,138 +10,100 @@ const templateFile = path.join(__dirname, 'template.html');
 fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
   if (err) throw err;
 
-  // ! Создаём style.css
-  fs.writeFile(path.join(projectDistFolder,'style.css'), '', (err) => {
-    if (err) throw err;
+  const createStyleFile = async () => {
+    try {
+      // ! Создаем style.css
+      await fs.promises.writeFile(path.join(projectDistFolder, 'style.css'), '');
 
-    // ! Копируем все стили туда
-  fs.readdir(stylesFolder, (err, files) => {
-    if(err) {
-      console.log('Ошибочка');
+      // Копируем все стили туда
+      const files = await fs.promises.readdir(stylesFolder);
+
+      for (const file of files) {
+        const reg = /.css/g;
+
+        const status = await fs.promises.stat(path.join(stylesFolder, file));
+
+        if (status.isFile() && reg.test(file)) {
+          const data = await fs.promises.readFile(path.join(stylesFolder, file), 'utf-8');
+          await fs.promises.appendFile(path.join(projectDistFolder, 'style.css'), `${data}\n`);
+        }
+      }
+    } catch (err) {
+      throw err;
     }
+  };
 
-    for(const file of files) {
-      const reg = /.css/g;
-
-      fs.stat(path.join(stylesFolder, file), (err, status) => {
-        if (err) throw err;
-
-        if(status.isFile() && reg.test(file)) {
-          fs.readFile(path.join(stylesFolder, file), 'utf-8', (err, data) => {
-            if (err) throw err;
-            fs.appendFile(path.join(projectDistFolder, 'style.css'), `${data}\n`, (err) => {
-              if (err) throw err;
-            });
-          });
-        }
-      });
-    }
-  });
-});
+  createStyleFile();
 
 
-// ! Создаём папку dist/assets
-fs.mkdir(path.join(projectDistFolder, 'assets'), { recursive: true }, (err) => {
-  if (err) throw err;
+  const createAssetsFolder = async () => {
+    try {
+      // ! Создаем папку dist/assets
+      await fs.promises.mkdir(path.join(projectDistFolder, 'assets'), { recursive: true });
 
-  // ! Читаем дирректорию assets
-  fs.readdir(assetsFolder, (err, folders) => {
-    if (err) throw err;
+      // ! Читаем директорию assets
+      const folders = await fs.promises.readdir(assetsFolder);
 
-    // ! СОЗДАЕМ ПАПКИ В dist/assets {fonts/img/svg}
-    for (const folder of folders) {
-      fs.mkdir(path.join(projectDistFolder, 'assets', folder), { recursive: true }, (err) => {
-        if(err) {
-          console.log('не удалось создать');
-        }
-      });
+      // ! Создаем папки в dist/assets {fonts/img/svg}
+      for (const folder of folders) {
+        await fs.promises.mkdir(path.join(projectDistFolder, 'assets', folder), { recursive: true });
 
-      // ! УДАЛЕНИЕ ФАЙЛОВ ПЕРЕД СОЗДАНИЕМ ASSETS
-      fs.readdir(path.join(projectDistFolder, 'assets', folder), (err, files) => {
-        if (err) throw err;
-
-        for (const file of files) {
-          fs.unlink(path.join(path.join(projectDistFolder, 'assets', folder, file)), err => {
-            if (err) throw err;
-          });
-        }
-      });
-
-      // ! Копируем файлы из assets в dist/assets
-      fs.readdir(path.join(assetsFolder, folder), (err, files) => {
-        if (err) {
-          console.log(err);
-          return;
+        // ! Удаление файлов перед созданием assets
+        const filesToDelete = await fs.promises.readdir(path.join(projectDistFolder, 'assets', folder));
+        for (const file of filesToDelete) {
+          await fs.promises.unlink(path.join(projectDistFolder, 'assets', folder, file));
         }
 
-        const copyFiles = () => {
-          if (files.length === 0) {
-            return;
-          }
-
-          const file = files.shift();
+        // ! Копирование файлов из assets в dist/assets
+        const filesToCopy = await fs.promises.readdir(path.join(assetsFolder, folder));
+        for (const file of filesToCopy) {
           const filesFolderPath = path.join(assetsFolder, folder, file);
           const filesCopyFolderPath = path.join(projectDistFolder, 'assets', folder, file);
-          fs.copyFile(filesFolderPath, filesCopyFolderPath, (err) => {
-            if (err) {
-              console.log('Не смогли скопировать');
-              return;
-            }
-            copyFiles();
-          });
-        };
-        copyFiles();
-      });
+          await fs.promises.copyFile(filesFolderPath, filesCopyFolderPath);
+        }
+      }
+    } catch (err) {
+      throw err;
     }
-  });
-});
+  };
 
+  createAssetsFolder();
 
-  // ! Создаём index.html
-  fs.writeFile(path.join(projectDistFolder, 'index.html'), '', (err) => {
-    if (err) throw err;
+  const createIndexFile = async () => {
+    try {
+      // ! Создаем index.html
+      await fs.promises.writeFile(path.join(projectDistFolder, 'index.html'), '');
 
-    // ! Читаем tamplate и добавляем все из него в dist/index.html
-    fs.readFile(templateFile, (err, data) => {
-      if (err) throw err;
-      fs.appendFile(path.join(projectDistFolder, 'index.html'), data , (err) => {
-        if (err) throw err;
+      // ! Читаем tamplate и добавляем все из него в dist/index.html
+      const data = await fs.promises.readFile(templateFile);
+      await fs.promises.appendFile(path.join(projectDistFolder, 'index.html'), data);
 
-        // ! Читаем index из dist
-        fs.readFile(path.join(projectDistFolder, 'index.html'), 'utf-8', (err, indexData) => {
-          if (err) throw err;
+      // ! Читаем index из dist
+      let indexData = await fs.promises.readFile(path.join(projectDistFolder, 'index.html'), 'utf-8');
 
-          // ! Читаем dir в components
-          fs.readdir(componentsFolder, (err, files) => {
-            const MASGE = [];
-            if (err) throw err;
-            for (let i=0; i<=files.length-1; i++) {
-              MASGE.push(files[i]);
-            }
+      // ! Читаем dir в components
+      const files = await fs.promises.readdir(componentsFolder);
+      const MASGE = files.map(file => file);
 
-            // ! Читакем каждый прочитанный файл в разметку index по одному
-            let changeIndexData = indexData;
-            for (let i=0; i<=MASGE.length-1; i++) {
-              fs.readFile(path.join(componentsFolder, MASGE[i]), 'utf-8', (err, block) => {
-                if (err) throw err;
-                const reg = /.html/g;
-                const nameTag = MASGE[i].replace(reg, '').toString();
-                const size = `{{${nameTag}}}`.length;
-                const findIn = changeIndexData.indexOf(`{{${nameTag}}}`);
-                const contentBeforeInsertion = changeIndexData.slice(0, findIn);
-                const contentAfterInsertion = changeIndexData.slice(findIn + size, changeIndexData.length);
-                const updatedContent = contentBeforeInsertion + `\n${block}` + contentAfterInsertion;
-                changeIndexData = updatedContent;
+      // ! Читаем каждый прочитанный файл в разметку index по одному
+      for (const fileName of MASGE) {
+        const block = await fs.promises.readFile(path.join(componentsFolder, fileName), 'utf-8');
+        const reg = /.html/g;
+        const nameTag = fileName.replace(reg, '').toString();
+        const size = `{{${nameTag}}}`.length;
+        const findIn = indexData.indexOf(`{{${nameTag}}}`);
+        const contentBeforeInsertion = indexData.slice(0, findIn);
+        const contentAfterInsertion = indexData.slice(findIn + size, indexData.length);
+        const updatedContent = contentBeforeInsertion + `\n${block}` + contentAfterInsertion;
+        indexData = updatedContent;
 
-                // ! Добавляем его в разметку по одному
-                fs.writeFile(path.join(projectDistFolder, 'index.html'), updatedContent, 'utf-8',(err) => {
-                  if (err) throw err;
-                });
-              });
-            }
-          });
-        });
-      });
-    });
-  });
+        // ! Добавляем его в разметку по одному
+        await fs.promises.writeFile(path.join(projectDistFolder, 'index.html'), updatedContent, 'utf-8');
+      }
+    } catch (err) {
+      throw err;
+    }
+  };
+
+  createIndexFile();
 });
