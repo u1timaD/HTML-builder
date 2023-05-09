@@ -14,54 +14,6 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
   fs.writeFile(path.join(projectDistFolder, 'index.html'), '', (err) => {
     if (err) throw err;
 
-    // ! Читаем tamplate и добавляем все из него в dist/index.html
-    fs.readFile(templateFile, (err, data) => {
-      if (err) throw err;
-      fs.appendFile(path.join(projectDistFolder, 'index.html'), data , (err) => {
-        if (err) throw err;
-      });
-
-      // ! Читаем index из dist
-      fs.readFile(path.join(projectDistFolder, 'index.html'), 'utf-8', (err, indexData) => {
-        if (err) {
-          console.log(err);
-          return;
-        }
-
-        // ! Читаем dir в components
-        fs.readdir(componentsFolder, (err, files) => {
-          const MASGE = [];
-          if (err) throw err;
-          for (let i=0; i<=files.length-1; i++) {
-            MASGE.push(files[i]);
-          }
-
-          // ! Читакем каждый прочитанный файл в разметку index по одному
-          let changeIndexData = indexData;
-          for (let i=0; i<=MASGE.length-1; i++) {
-            fs.readFile(path.join(componentsFolder, MASGE[i]), 'utf-8', (err, block) => {
-              if (err) throw err;
-              const reg = /.html/g;
-              const nameTag = MASGE[i].replace(reg, '').toString();
-              const size = `{{${nameTag}}}`.length;
-              const findIn = changeIndexData.indexOf(`{{${nameTag}}}`);
-              const contentBeforeInsertion = changeIndexData.slice(0, findIn);
-              const contentAfterInsertion = changeIndexData.slice(findIn + size, changeIndexData.length);
-              const updatedContent = contentBeforeInsertion + `\n${block}` + contentAfterInsertion;
-              changeIndexData = updatedContent;
-
-              // ! Добавляем его в разметку по одному
-              fs.writeFile(path.join(projectDistFolder, 'index.html'), updatedContent, 'utf-8',(err) => {
-                if (err) {
-                  console.log(err);
-                  return;
-                }
-              });
-            });
-          }
-        });
-      });
-    });
   });
 
   // ! Создаём style.css
@@ -146,5 +98,54 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
         copyFiles();
       });
     }
+  });
+
+  // ! Читаем tamplate и добавляем все из него в dist/index.html
+  fs.readFile(templateFile, (err, data) => {
+    if (err) throw err;
+    fs.appendFile(path.join(projectDistFolder, 'index.html'), data , (err) => {
+      if (err) throw err;
+    });
+
+    // ! Читаем index из dist
+    fs.readFile(path.join(projectDistFolder, 'index.html'), 'utf-8', (err, indexData) => {
+      if (err) {
+        console.log(err);
+        return;
+      }
+
+      // ! Читаем dir в components
+      fs.readdir(componentsFolder, (err, files) => {
+        const MASGE = [];
+        if (err) throw err;
+        for (let i=0; i<=files.length-1; i++) {
+          MASGE.push(files[i]);
+        }
+
+        // ! Читакем каждый прочитанный файл в разметку index по одному
+        let changeIndexData = indexData;
+        for (let i=0; i<=MASGE.length-1; i++) {
+          fs.readFile(path.join(componentsFolder, MASGE[i]), 'utf-8', (err, block) => {
+            if (err) throw err;
+            const reg = /.html/g;
+            const nameTag = MASGE[i].replace(reg, '').toString();
+            const size = `{{${nameTag}}}`.length;
+            const findIn = changeIndexData.indexOf(`{{${nameTag}}}`);
+            const contentBeforeInsertion = changeIndexData.slice(0, findIn);
+            const contentAfterInsertion = changeIndexData.slice(findIn + size, changeIndexData.length);
+            const updatedContent = contentBeforeInsertion + `\n${block}` + contentAfterInsertion;
+            changeIndexData = updatedContent;
+
+            // ! Добавляем его в разметку по одному
+            fs.writeFile(path.join(projectDistFolder, 'index.html'), updatedContent, 'utf-8',(err) => {
+              if (err) {
+                console.log(err);
+                return;
+              }
+            });
+          });
+        }
+      });
+    });
   });
 });
