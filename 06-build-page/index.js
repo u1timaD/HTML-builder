@@ -10,18 +10,11 @@ const templateFile = path.join(__dirname, 'template.html');
 fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
   if (err) throw err;
 
-  // ! Создаём index.html
-  fs.writeFile(path.join(projectDistFolder, 'index.html'), '', (err) => {
-    if (err) throw err;
-
-  });
-
   // ! Создаём style.css
   fs.writeFile(path.join(projectDistFolder,'style.css'), '', (err) => {
     if (err) throw err;
-  });
 
-  // ! Копируем все стили туда
+    // ! Копируем все стили туда
   fs.readdir(stylesFolder, (err, files) => {
     if(err) {
       console.log('Ошибочка');
@@ -44,12 +37,14 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
       });
     }
   });
+});
 
-  // ! Создаём папку dist/assets
-  fs.mkdir(path.join(projectDistFolder, 'assets'), { recursive: true }, (err) => {
-    if (err) throw err;
-  });
 
+// ! Создаём папку dist/assets
+fs.mkdir(path.join(projectDistFolder, 'assets'), { recursive: true }, (err) => {
+  if (err) throw err;
+
+  // ! Читаем дирректорию assets
   fs.readdir(assetsFolder, (err, folders) => {
     if (err) throw err;
 
@@ -59,8 +54,9 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
         if(err) {
           console.log('не удалось создать');
         }
+      });
 
-        // ! УДАЛЕНИЕ ФАЙЛОВ ПЕРЕД СОЗДАНИЕМ ASSETS
+      // ! УДАЛЕНИЕ ФАЙЛОВ ПЕРЕД СОЗДАНИЕМ ASSETS
       fs.readdir(path.join(projectDistFolder, 'assets', folder), (err, files) => {
         if (err) throw err;
 
@@ -70,7 +66,6 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
           });
         }
       });
-    });
 
       // ! Копируем файлы из assets в dist/assets
       fs.readdir(path.join(assetsFolder, folder), (err, files) => {
@@ -99,52 +94,53 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
       });
     }
   });
+});
 
-  // ! Читаем tamplate и добавляем все из него в dist/index.html
-  fs.readFile(templateFile, (err, data) => {
+
+  // ! Создаём index.html
+  fs.writeFile(path.join(projectDistFolder, 'index.html'), '', (err) => {
     if (err) throw err;
-    fs.appendFile(path.join(projectDistFolder, 'index.html'), data , (err) => {
+
+    // ! Читаем tamplate и добавляем все из него в dist/index.html
+    fs.readFile(templateFile, (err, data) => {
       if (err) throw err;
-    });
-
-    // ! Читаем index из dist
-    fs.readFile(path.join(projectDistFolder, 'index.html'), 'utf-8', (err, indexData) => {
-      if (err) {
-        console.log(err);
-        return;
-      }
-
-      // ! Читаем dir в components
-      fs.readdir(componentsFolder, (err, files) => {
-        const MASGE = [];
+      fs.appendFile(path.join(projectDistFolder, 'index.html'), data , (err) => {
         if (err) throw err;
-        for (let i=0; i<=files.length-1; i++) {
-          MASGE.push(files[i]);
-        }
 
-        // ! Читакем каждый прочитанный файл в разметку index по одному
-        let changeIndexData = indexData;
-        for (let i=0; i<=MASGE.length-1; i++) {
-          fs.readFile(path.join(componentsFolder, MASGE[i]), 'utf-8', (err, block) => {
+        // ! Читаем index из dist
+        fs.readFile(path.join(projectDistFolder, 'index.html'), 'utf-8', (err, indexData) => {
+          if (err) throw err;
+
+          // ! Читаем dir в components
+          fs.readdir(componentsFolder, (err, files) => {
+            const MASGE = [];
             if (err) throw err;
-            const reg = /.html/g;
-            const nameTag = MASGE[i].replace(reg, '').toString();
-            const size = `{{${nameTag}}}`.length;
-            const findIn = changeIndexData.indexOf(`{{${nameTag}}}`);
-            const contentBeforeInsertion = changeIndexData.slice(0, findIn);
-            const contentAfterInsertion = changeIndexData.slice(findIn + size, changeIndexData.length);
-            const updatedContent = contentBeforeInsertion + `\n${block}` + contentAfterInsertion;
-            changeIndexData = updatedContent;
+            for (let i=0; i<=files.length-1; i++) {
+              MASGE.push(files[i]);
+            }
 
-            // ! Добавляем его в разметку по одному
-            fs.writeFile(path.join(projectDistFolder, 'index.html'), updatedContent, 'utf-8',(err) => {
-              if (err) {
-                console.log(err);
-                return;
-              }
-            });
+            // ! Читакем каждый прочитанный файл в разметку index по одному
+            let changeIndexData = indexData;
+            for (let i=0; i<=MASGE.length-1; i++) {
+              fs.readFile(path.join(componentsFolder, MASGE[i]), 'utf-8', (err, block) => {
+                if (err) throw err;
+                const reg = /.html/g;
+                const nameTag = MASGE[i].replace(reg, '').toString();
+                const size = `{{${nameTag}}}`.length;
+                const findIn = changeIndexData.indexOf(`{{${nameTag}}}`);
+                const contentBeforeInsertion = changeIndexData.slice(0, findIn);
+                const contentAfterInsertion = changeIndexData.slice(findIn + size, changeIndexData.length);
+                const updatedContent = contentBeforeInsertion + `\n${block}` + contentAfterInsertion;
+                changeIndexData = updatedContent;
+
+                // ! Добавляем его в разметку по одному
+                fs.writeFile(path.join(projectDistFolder, 'index.html'), updatedContent, 'utf-8',(err) => {
+                  if (err) throw err;
+                });
+              });
+            }
           });
-        }
+        });
       });
     });
   });
