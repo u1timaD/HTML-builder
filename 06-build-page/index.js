@@ -59,9 +59,8 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
         if(err) {
           console.log('не удалось создать');
         }
-      });
 
-      // ! УДАЛЕНИЕ ФАЙЛОВ ПЕРЕД СОЗДАНИЕМ ASSETS
+        // ! УДАЛЕНИЕ ФАЙЛОВ ПЕРЕД СОЗДАНИЕМ ASSETS
       fs.readdir(path.join(projectDistFolder, 'assets', folder), (err, files) => {
         if (err) throw err;
 
@@ -71,6 +70,7 @@ fs.mkdir(projectDistFolder, { recursive: true }, (err) => {
           });
         }
       });
+    });
 
       // ! Копируем файлы из assets в dist/assets
       fs.readdir(path.join(assetsFolder, folder), (err, files) => {
