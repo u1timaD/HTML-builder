@@ -10,6 +10,7 @@ fs.readdir(secretFolder, (err, files) => {
 
   files.forEach(file => {
     const filePath = path.join(secretFolder, file);
+    // !Изменил выражение
     const fileName = file.replace(/\.[^.]+$/, '');
     const fileRas = file.replace(/\w+\./g, '');
 
