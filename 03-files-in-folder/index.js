@@ -10,7 +10,7 @@ fs.readdir(secretFolder, (err, files) => {
 
   files.forEach(file => {
     const filePath = path.join(secretFolder, file);
-    const fileName = file.replace(/\..+/g, '');
+    const fileName = file.replace(/\.[^.]+$/, '');
     const fileRas = file.replace(/\w+\./g, '');
 
     fs.stat(filePath, (err, stats) => {
